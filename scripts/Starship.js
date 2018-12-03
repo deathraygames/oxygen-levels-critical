@@ -8,8 +8,8 @@ class Starship {
 		this.blocks = []; // 1 dimensional array of all blocks
 		this.graph = []; // 2d array of grid
 		this.gridSize = { x: 32, y: 30 }; // TODO: calculate these
-		this.oxygen = 1990; // 5900;
-		this.oxygenMax = 2000; // 6000;
+		this.oxygen = 2490; // 5900;
+		this.oxygenMax = 2500; // 6000;
 		this.isScanning = false;
 		this.isMining = false;
 	}
