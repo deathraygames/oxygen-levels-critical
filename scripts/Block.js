@@ -1,10 +1,27 @@
 (function(RB){
 
 const BLOCK_SIZE = 16;
+const CHARACTER_BLOCK_MAPPING = {
+    '': 'space',
+    ' ': 'space',
+    '#': 'wall',
+    '.': 'floor',
+    '|': 'cargoDoor',
+    '/': 'door',
+    'X': 'structure',
+    'E': 'exhaust',
+    'C': 'container',
+    'T': 'terminal',
+    'A': 'airlock',
+    'L': 'doorLock',
+    'O': 'oxygenMonitor',
+    's': 'scannerTerminal',
+    'g': 'laserTerminal',
+};
 
 class Block {
 	constructor(char, x, y) {
-		this.uniqueId = 'B' + (new Date().getTime()) + Math.round(Math.random() * 999);
+		this.uniqueId = 'B' + (new Date().getTime()) + Math.round(Math.random() * 99999999);
 		this.char = char;
 		this.type = Block.getTypeFromChar(char);
 		this.passable = Block.getPassableFromType(this.type);
@@ -14,7 +31,7 @@ class Block {
 		this.isOpen = false;
         this.isLocked = false;
         this.air = Block.getAirFromType(this.type);
-        this.connected = null;
+        this.connected = [];
 	}
 
 	getPassable() {
@@ -53,8 +70,8 @@ class Block {
     }
 
     connect(block) {
-        this.connected = block;
-        block.connected = this;
+        this.connected.push(block);
+        block.connected.push(this);
     }
 
 	// Utility
@@ -64,47 +81,11 @@ class Block {
 	static getTypeFromChar(char) {
 		if (typeof char !== 'string') {
 			return 'space';
-		}
-		switch(char) {
-			case '':
-			case ' ':
-				return 'space';
-				break;
-			case '#':
-				return 'wall';
-				break;
-			case '.':
-				return 'floor';
-				break;
-			case '|':
-				return 'cargoDoor';
-				break;
-			case '/':
-				return 'door';
-				break;
-			case 'X':
-				return 'structure';
-				break;
-			case 'E':
-                return 'exhaust';
-                break;
-            case 'C':
-                return 'container';
-                break;
-            case 'T':
-                return 'terminal';
-                break;
-            case 'A':
-                return 'airlock';
-                break;
-            case 'L':
-                return 'doorLock';
-                break;
-            case 'O':
-                return 'oxygenMonitor';
-                break;
-		}
-		return 'wall';
+        }
+        if (CHARACTER_BLOCK_MAPPING[char]) {
+            return CHARACTER_BLOCK_MAPPING[char];
+        }
+        return 'structure';
 	}
 	static getPassableFromType(type) {
 		if (['space', 'door', 'floor'].includes(type)) {

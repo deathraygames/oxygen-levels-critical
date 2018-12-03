@@ -5,30 +5,92 @@
 	<title>Oxygen Levels Critical - Ludum Dare 43</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<link rel="stylesheet" href="styles/basic.css" />
+	<link href="https://fonts.googleapis.com/css?family=Kanit" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css?family=Carter+One" rel="stylesheet">
 </head>
 <body>
 <div id="page">
-	<header>
-		Oxygen Levels Critical - a web game for Ludum Dare 43 - <i>Sacrifices must be made</i>	
-	</header>
+	<div class="game-over-message dialog">
+		<h1>WASTED<br />Game Over</h1>
+		<p>Refresh the page to play again.</p>
+		<button type="button" id="reload-button">Reload</button>
+	</div>
+	<div class="game-win-message dialog">
+		<h1>You saved the ship and survived!</h1>
+		<p>Congrats! You no longer have a negative oxygen rate.</p>
+		<p>Refresh the page to play again, or continue this game.</p>
+		<button type="button" id="continue-button">Continue</button>
+		<p>
+			If you enjoyed the game, please consider sharing it with your friends.
+		</p>
+	</div>
+
 	<div id="space">
 		<div id="ship">
 			<!-- fill in via js -->
 		</div>
 	</div>
+	<div id="notifications">
+		<!-- fill in via js -->
+	</div>
 
 	<div id="intro" class="dialog">
 		<h1>Oxygen Levels Critical</h1>
-		Made entirely by Luke -- with one contribution from Lenora, banging on the keyboard:
+		<button type="button" id="beginButton">Begin</button>
+		<p>
+			<h2>How to play</h2>
+			<ul>
+				<li>Click on the floor to move</li>
+				<li>Some doors can be locked by a switch next to it</li>
+				<li>Click on various terminals to use them</li>
+				<li>Click on people to chat; you might convince them to go to the cargo hold</li>
+				<li>Mouse wheel to zoom</li>
+			</ul>
+		</p>
+		<p>
+			<h2>How to win</h2>
+			<ul>
+				<li>Don't die</li>
+				<li>Be careful when opening cargo doors</li>
+				<li>Get to a sustainable level of oxygen consumption</li>
+				<li>Sacrifices may be required</li>
+			</ul>
+		</p>
+	</div>
+
+	<div id="credits" class="dialog">
+		<h1>Oxygen Levels Critical</h1>
+		<p>
+			Made entirely by Luke -- with one contribution from Lenora (age: 8 months), banging on the keyboard:
+		</p>
 		<pre>
 			vc bvc   vc bvhgf v b  jnmm c    bvg jnh jnh h  vg  ju bvb n m         m  bh n   jbhu bv b       bbbbbbbbbbbbbbbbbbbbbbbbbbb  nb nbm        c  v  b              nb   bvfb b jk,m jnhmb n   b         bvf jk,mkl,jk78574200031.20.0.0.0.0.0.0.0.0.0.0. 01,2
 		</pre>
-		Dedicated to my wife, a better sci-fi geek than me.
+		<p>
+			Created in VS Code, with testing in Chrome. Star field background made with Photoshop.
+			All other "graphics" are made with CSS and text.
+		</p>
+		<p>
+			Libraries used: <a href="https://github.com/bgrins/javascript-astar" target="_blank">A* Search➚</a>
+			and <a href="https://github.com/rocket-boots/rocket-boots" target="_blank">RocketBoots (Coords)➚</a>.
+		</p>
+		<p>
+			Dedicated to my wife who fosters my hobbies and is a better sci-fi geek than me.
+		</p>
+		<button type="button" id="continue-button2">Continue</button>
 	</div>
+	<footer>
+		Oxygen Levels Critical - a web game made in 48 hours for Ludum Dare 43 - <i>Sacrifices must be made</i>
+		| 
+		<a href="#intro" id="open-intro">Intro</a> |
+		<a href="#credits" id="open-credits">Credits</a> |
+		<a href="https://ldjam.com/users/deathray/" target="_blank">LD Jam➚</a> |
+		<a href="https://github.com/deathraygames/oxygen-levels-critical" target="_blank">Code➚</a>
+	</footer>
 </div>
 
 <div class="scripts">
-	<script src="scripts/libs/lodash.min.js"></script>
+	<!-- <script src="scripts/libs/lodash.min.js"></script> -->
 	<!-- <script src="scripts/libs/pixi.js"></script> -->
 	<script src="scripts/libs/astar.js"></script>
 	<!-- <script src="http://deathraygames.com/js/ga.js"></script> -->

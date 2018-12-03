@@ -12,12 +12,17 @@ const MOVE_GOAL = 'move';
 const MOVE_ACTION = 'move';
 const ATTACK_ACTION = 'attack';
 const WAIT_ACTION = 'wait';
-const FACES = ['o_o', 'O_o', '._.', 'o.o', '^_^', '~_~', '>_>', '☉_☉', '¬_¬', '°ロ°', 'ಠ~ಠ', '•◡•', '◉_◉', '°□°', '◔̯◔', ' ͡° ͜ʖ ͡°', 'ツ', '•ᴥ•', 'ಠ_ಠ', '°,,°', '•_•', '■_■', '˚▽˚', 'ಠ⌣ಠ', 'ರ_ರ', 'ʘ‿ʘ', '⚆_⚆', '⍤'];
+const FACES = [
+	'o_o', 'O_o', '._.', 'o.o', '^_^', '~_~', '>_>', '☉_☉', '¬_¬', '°ロ°', 'ಠ~ಠ', '•◡•', '◉_◉',
+	'⦿=⦿', '°□°', '◔̯◔', ' ͡° ͜ʖ ͡°', 'ツ', '•ᴥ•', 'ಠ_ಠ', '°,,°', '•_•', '■_■', '˚▽˚', 'ಠ⌣ಠ',
+	'ರ_ರ', 'ʘ‿ʘ', '⚆_⚆', '⍤', 'ⓞ_ⓞ', '⊳_⊲', '⟐‿⟐', 'o⊻o', '≖o≖', '●⌓●', '⊙.⊙', '◍_◍',
+	'°▴°', '∴_∴', '⏣⍽⏣', 'o⌵o', '.⌄.', '⥛o⥚', '⸜⍘⸝', 'o⍛o', '●⎵●'
+];
 
 class Character {
 	constructor(options) {
 		this.name = options.name || '?';
-		this.uniqueId = 'C' + (new Date().getTime()) + Math.round(Math.random() * 999);
+		this.uniqueId = 'C' + (new Date().getTime()) + Math.round(Math.random() * 99999999);
 		this.isPC = Boolean(options.isPC);
 		this.canWander = !this.isPC;
 		// Size
@@ -33,6 +38,10 @@ class Character {
 		this.goals = [];
 		this.actionCooldown = 0;
 		this.thinkingCooldown = 0;
+		// voice
+		this.voice = options.voice || null;
+		this.voicePitch = options.voicePitch || 1;
+		this.voiceRate = options.voiceRate || 1;
 		// Stats
 		this.ai = {
 			type: null,
@@ -47,6 +56,7 @@ class Character {
 		this.healthMax = options.healthMax || 10;
 		this.health = options.health || this.healthMax;
 		this.face = getRandomArrayItem(FACES);
+		this.deadFace = '✕_✕';
 	}
 
 	log(...params) {
@@ -92,14 +102,19 @@ class Character {
 		this.goals.length = 0;
 	}
 
-	moveAtSpeed(tileDelta, t) {
-		const distance = this.speed * (t / 1000);
-		// this.log('move at speed', this.speed, 'x t', t, 'Distance', distance);
-		this.move(tileDelta.clone().setMagnitude(distance));
+	moveTowardsAtSpeed(pos, t, speed) {
+		const delta = this.pos.clone().subtract(pos).multiply(-1);
+		return this.moveAtSpeed(delta, t, speed);
 	}
-	move(tileDelta) {
+
+	moveAtSpeed(delta, t, speed = this.speed) {
+		const distance = speed * (t / 1000);
+		// this.log('move at speed', this.speed, 'x t', t, 'Distance', distance);
+		this.move(delta.clone().setMagnitude(distance));
+	}
+	move(delta) {
 		this.lastPos = this.pos.clone();
-		this.pos.add(tileDelta);
+		this.pos.add(delta);
 		// this.setSpritePosition();
 		this.sync(this);
 	}
@@ -127,6 +142,9 @@ class Character {
 	hurt(n) {
 		this.health -= n;
 	}
+	isHurt() {
+		return (this.health < this.healthMax);
+	}
 	isDead() {
 		return (this.health <= 0);
 	}
@@ -139,7 +157,7 @@ class Character {
 	getNearestCharacter() {
 		let nearestDistance = Infinity;
 		let nearestCharacter = null;
-		_.each(this.visibleCharacters, (character) => {
+		this.visibleCharacters.forEach((character) => {
 			if (character === this) {
 				return;
 			}
@@ -153,19 +171,26 @@ class Character {
 	}
 
 	cooldown(t) {
-		// this.log('cooling down');
+		this.cooldownThinking(t);
+		this.cooldownAction(t);
+	}
+
+	cooldownThinking(t) {
 		if (this.thinkingCooldown > 0) {
 			this.thinkingCooldown -= t;
 			if (this.thinkingCooldown < 0) { this.thinkingCooldown = 0; }
 		}
+	}
+
+	cooldownAction(t) {
 		if (this.actionCooldown > 0) {
 			this.actionCooldown -= t;
 			if (this.actionCooldown < 0) { this.actionCooldown = 0; }
-		}
+		}		
 	}
 
 	think(options = {}) {
-		if (!this.ai || !this.ai.type || this.thinkingCooldown > 0) {
+		if (this.isDead() || !this.ai || !this.ai.type || this.thinkingCooldown > 0) {
 			return false;
 		}
 		// this.log('thinking');
@@ -194,20 +219,23 @@ class Character {
 			this.thinkingCooldown += 2000 + Math.round(Math.random() * 5000);
 		}
 	}
-	thinkAsWalker(goal, graph) {
-		// this.log('thinking as walker to aim to goal', goal);
-		// console.log('graph', graph);
+	getRoute(gridPos, graph) {
 		let result = [];
 		const aStarGraph = new AStarGraph(graph);
 		try {
-			const { gridPos } = goal.target;
 			const currentGridPos = this.getGridPos();
 			result = aStarGraph.search(currentGridPos, gridPos);
 		} catch (error) {
 			// ignore errors
-			console.warn(error, graph, aStarGraph);
 		}
-		if (!result || result.length === 0) {
+		return result;		
+	}
+	thinkAsWalker(goal, graph) {
+		// this.log('thinking as walker to aim to goal', goal, graph);
+		const { gridPos } = goal.target;
+		const route = this.getRoute(gridPos, graph);
+		// this.log(route);
+		if (!route || route.length === 0) {
 			// console.warn('route planning in thinkAsWalker failed');
 			// this.log('cannot plan route. Reached goal or blocked.');
 			this.clearGoals();
@@ -215,7 +243,7 @@ class Character {
 			return;
 		}
 		this.clearActionPlan();
-		this.planToMoveAlongRoute(result);
+		this.planToMoveAlongRoute(route);
 	}
 	thinkAboutWandering() {
 		const target = getRandomArrayItem(this.memory.knownPlaces);
@@ -269,7 +297,7 @@ class Character {
 
 	act(t) {
 		// this.log('act...', this.actionPlan.length,  this.actionCooldown);
-		if (this.actionPlan.length <= 0 || this.actionCooldown > 0) {
+		if (this.isDead() || this.actionPlan.length <= 0 || this.actionCooldown > 0) {
 			// this.log('no plans or cooling down');
 			return false;
 		}
@@ -277,8 +305,7 @@ class Character {
 		// this.log('acting 1/', this.actionPlan.length, action.pos.x, action.pos.y);
 		switch(action.verb) {
 			case MOVE_ACTION: {
-				const delta = this.pos.clone().subtract(action.pos).multiply(-1);
-				this.moveAtSpeed(delta, t);
+				this.moveTowardsAtSpeed(action.pos, t);
 				if (this.pos.getDistance(action.pos) < 1) {
 					// this.log('success with move', action);
 					this.actionPlan.shift();
