@@ -69,13 +69,31 @@ class StarshipDOM {
     }
 
     center(what) {
-        const elt = document.getElementById(what.uniqueId);
-        const eltRect = elt.getBoundingClientRect();
+        const eltCenter = StarshipDOM.getElementCenter(what.uniqueId);
         const shipRect = this.element.getBoundingClientRect();
-        const mid = { x: window.innerHeight/2, y: window.innerWidth/2 };
-        const offset = { x: mid.x - eltRect.x, y: mid.y - eltRect.y };
-        this.element.style.left = Math.round(shipRect.x + offset.x) + 'px';
-        this.element.style.top = Math.round(shipRect.y + offset.y) + 'px';
+        const mid = StarshipDOM.getWindowCenter();
+        const offset = {
+            x: Math.round(mid.x - eltCenter.x),
+            y: Math.round(mid.y - eltCenter.y)
+        };
+        const left = Math.round(shipRect.x + offset.x);
+        const top =  Math.round(shipRect.y + offset.y);
+        this.element.style.left = left + 'px';
+        this.element.style.top = top + 'px';
+        console.log(eltCenter, shipRect, mid, '\noffset', offset, left, top);
+    }
+
+    static getElementCenter(id) {
+        const elt = document.getElementById(id);
+        const eltRect = elt.getBoundingClientRect();
+        return {
+            x: eltRect.x + (eltRect.width/2),
+            y: eltRect.y + (eltRect.height/2)
+        };
+    }
+
+    static getWindowCenter() {
+        return { x: window.innerWidth/2, y: window.innerHeight/2 };
     }
 
     zoom(delta) {
