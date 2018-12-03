@@ -80,7 +80,7 @@ class StarshipDOM {
         const top =  Math.round(shipRect.y + offset.y);
         this.element.style.left = left + 'px';
         this.element.style.top = top + 'px';
-        console.log(eltCenter, shipRect, mid, '\noffset', offset, left, top);
+        // console.log(eltCenter, shipRect, mid, '\noffset', offset, left, top);
     }
 
     static getElementCenter(id) {
