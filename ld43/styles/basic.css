@@ -60,13 +60,15 @@ a:hover {
 .dialog {
 	display: none;
 	position: absolute;
+	box-sizing: border-box;
 	z-index: 2;
 	text-align: center;
 	width: 100%;
 	height: 100%;
 	top: 0;
+	left: 0;
 	font-size: 100%;
-	padding: 2em 0;
+	padding: 2em 1em;
 	background-color: rgba(0,0,0,0.7);
 	border: solid #000;
 	border-width: 1px 0;
@@ -362,4 +364,25 @@ a:hover {
 
 pre {
 	white-space: pre-wrap;
+}
+
+
+@media screen and (max-width: 800px) {
+	h1 {
+		font-size: 200%;
+		margin: 0.5em 0;
+	}
+	#intro,
+	#credits {
+		font-size: 80%;
+		padding: 0.1em 1em;
+	}
+	#intro h1,
+	#credits h1 {
+		font-size: 200%;
+		margin: 0.1em 0;
+	}
+	#page > footer {
+		font-size: 60%;
+	}
 }
